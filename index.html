@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>App demo</title>
+    <link rel="stylesheet" href="css/index.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.22.2/dist/bootstrap-table.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.22.2/dist/bootstrap-table.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="scripts/scripts.js"></script>
+</head>
+<body class="main-page">
+<div class="container-fluid table-search-header">
+    <div class="row">
+        <div class="col-1 col-md-1">
+            <div class="circle block">
+                <p>skb.</p>
+            </div>
+        </div>
+        <div class="col-md-8 col-8 d-flex flex-row align-content-center">
+            <div class="input-group p-2">
+                <input id="searchInput" type="text" class="form-control" placeholder="Введите запрос"
+                       aria-label="query">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container table-content">
+    <div class="row">
+        <div class="col">
+            <h2>Клиенты</h2>
+        </div>
+    </div>
+
+</div>
+<div class="container text-center">
+    <div class="row mh-100">
+        <table
+                id="table"
+                data-search="true"
+                data-toolbar="#toolbar"
+                data-detail-view="true"
+                data-click-to-select="true"
+                data-detail-formatter="detailFormatter"
+                data-minimum-count-columns="2"
+                data-pagination="true"
+                data-id-field="id"
+                data-page-list="[10, 25, 50, 100, all]"
+                data-response-handler="responseHandler">
+        </table>
+    </div>
+    <div class="row">
+        <button id="showAddPerson" type="button" class="btn btn-outline-primary">Добавить клиента</button>
+    </div>
+</div>
+
+<div id="personDialog" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Изменить данные: <span class="dialog-id-text">ID: <span
+                        id="personIdLabel"></span></span></h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="lastNameInput">Фамилия *</label>
+                        <input type="text" class="form-control" id="lastNameInput" aria-describedby="lastNameHelp"
+                               placeholder="Фамилия">
+                        <small id="lastNameHelp" class="form-text text-muted">Фамилия обязательное поле для
+                            заполнения.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="firstNameInput">Имя *</label>
+                        <input type="text" class="form-control" id="firstNameInput" aria-describedby="firstNameHelp"
+                               placeholder="Имя">
+                        <small id="firstNameHelp" class="form-text text-muted">Имя обязательное поле для
+                            заполнения.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="middleNameInput">Отчество *</label>
+                        <input type="text" class="form-control" id="middleNameInput" aria-describedby="middleNameHelp"
+                               placeholder="Отчество">
+                        <small id="middleNameHelp" class="form-text text-muted">Отчество не обязательное поле для
+                            заполнения.</small>
+                    </div>
+                    <div id="contact-panel">
+                        <form>
+                            <table>
+                                <tbody id="contact-data">
+
+                                </tbody>
+                            </table>
+                        </form>
+                        <button id="addContactToDialog" type="button" class="btn btn-link"><span
+                                class="fa fa-plus"></span> Добавить контакт
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="savePersonButton" type="button" class="btn btn-primary">Сохранить</button>
+                <button id="deletePersonButton" type="button" class="btn btn-primary">Удалить</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+    <input id="personId" type="hidden" name="personId" value="">
+</div>
+
+<div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                Удалить клиента
+            </div>
+            <div class="modal-body">
+                Вы действительно хотите удалить данного клиента?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-bs-dismiss="modal">Отмена</button>
+                <a id="confirmDelete" class="btn btn-danger btn-ok">Удалить</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentPersonId = -1;
+    let currentContacts = [];
+    const $table = $('#table');
+    $('#lastNameInput').keyup(function () {
+        validateForm();
+    });
+    $('#firstNameInput').keyup(function () {
+        validateForm();
+    });
+
+
+    function operateFormatter(value, row, index) {
+        return [
+            '<a class="edit" href="javascript:void(0)" title="Like">',
+            '<i class="fa fa-edit">Редактировать</i>',
+            '</a>  ',
+            '<a class="remove" href="javascript:void(0)" title="Remove">',
+            '<i class="fa fa-trash">Удалить</i>',
+            '</a>'
+        ].join('')
+    }
+
+    function nameFormatter(value, row, index) {
+        return [
+            row.firstName,
+            row.middleName,
+            row.lastName
+        ].join(' ')
+    }
+
+    function contactFormatter(value, row, index) {
+        let person = getPerson(row.id);
+        return person.contacts.map(contact => {
+            let icon = 'fa-user';
+            let classIcons = 'fa';
+            switch (contact.type) {
+                case 'phone':
+                    icon = 'fa-phone';
+                    break;
+                case 'email':
+                    icon = 'fa-envelope';
+                    break;
+                case 'vk':
+                    classIcons = 'fab';
+                    icon = 'fa-vk';
+                    break;
+                case 'facebook':
+                    classIcons = 'fab';
+                    icon = 'fa-facebook-f';
+                    break;
+            }
+            return `<span class="${classIcons} ${icon}" title="**${contact.type}**: ${contact.value}">&nbsp;</span>`
+        }).join(' ');
+    }
+
+
+    function clearContacts() {
+        currentContacts = [];
+        $('.contact-row').remove();
+    }
+
+    function confirmRemoveContact() {
+        $table.bootstrapTable('remove', {
+            field: 'id',
+            values: [currentPersonId]
+        });
+        removePerson(currentPersonId);
+        $('#personDialog').modal('hide');
+        $('#confirm-delete').modal('hide');
+    }
+    $('#confirmDelete').click(function () {
+        confirmRemoveContact();
+    });
+    function removeContact(contactId) {
+        console.log('Remove person');
+        currentPersonId = contactId;
+        $('#confirm-delete').modal('show');
+    }
+
+    window.operateEvents = {
+        'click .edit': function (e, value, row, index) {
+            $('#personId').val(row.id);
+            $('#personIdLabel').text(row.id);
+            let person = getPerson(row.id);
+            $('#firstNameInput').val(person.firstName);
+            $('#lastNameInput').val(person.lastName);
+            $('#middleNameInput').val(person.middleName);
+            $('#personDialog').modal('show');
+            clearContacts();
+            if(person.contacts.length > 0) {
+                person.contacts.forEach(function (contact) {
+                    addContactRow(contact);
+                    currentContacts.push(contact);
+                });
+            }
+            $('#deletePersonButton').show();
+            validateForm();
+        },
+        'click .remove': function (e, value, row, index) {
+            let personId = row.id;
+            removeContact(personId);
+        }
+    }
+
+    function initTable() {
+        $table.bootstrapTable('destroy').bootstrapTable({
+            height: 550,
+            columns: [
+                [{
+                    title: 'ID',
+                    field: 'id',
+                    align: 'center',
+                    valign: 'middle',
+                    sortable: true
+                }, {
+                    title: 'Имя',
+                    field: 'name',
+                    sortable: true,
+                    formatter: nameFormatter,
+                    align: 'center'
+                }, {
+                    field: 'createDate',
+                    title: 'Дата Создания',
+                    sortable: true,
+                    align: 'center',
+                    formatter: dateFormatter,
+                },
+                    {
+                        field: 'updateDate',
+                        title: 'Дата Изменения',
+                        sortable: true,
+                        align: 'center',
+                        formatter: dateFormatter,
+                    },
+                    {
+                        field: 'contacts',
+                        title: 'Контакты',
+                        sortable: false,
+                        align: 'center',
+                        formatter: contactFormatter,
+                    },
+                    {
+                        field: 'operate',
+                        title: '',
+                        align: 'center',
+                        clickToSelect: false,
+                        events: window.operateEvents,
+                        formatter: operateFormatter
+                    }]
+            ],
+            data: getPersons()
+        })
+    }
+
+    const $searchInput = $('.search-input');
+    $(function () {
+        initTable();
+        $searchInput.hide();
+    })
+    const $addClient = $('#addClient');
+    $addClient.click(function () {
+        let person = addPerson({});
+        $table.bootstrapTable('load', getPersons());
+    });
+
+    const $showAddPerson = $('#showAddPerson');
+    $showAddPerson.click(function () {
+        clearContacts();
+        $('#personIdLabel').text('');
+        $('#personId').val('');
+        $('#firstNameInput').val('');
+        $('#lastNameInput').val('');
+        $('#middleNameInput').val('');
+        $('#personDialog').modal('show');
+        $('#deletePersonButton').hide();
+        validateForm();
+
+    });
+    const $deletePersonButton = $('#deletePersonButton');
+    $deletePersonButton.click(function () {
+        let personId = $('#personId').val();
+        removeContact(parseInt(personId));
+    });
+
+    const $savePersonButton = $('#savePersonButton');
+    $savePersonButton.click(function () {
+        let firstName = $('#firstNameInput').val();
+        let lastName = $('#lastNameInput').val();
+        let middleName = $('#middleNameInput').val();
+        let personId = $('#personId').val();
+        currentContacts.forEach(contact => {
+           contact.type = $(`#contact-type-${contact.uuid}`).val();
+           contact.value = $(`#contact-value-${contact.uuid}`).val();
+        });
+        if (personId) {
+            let person = getPerson(parseInt(personId));
+            person.firstName = firstName;
+            person.lastName = lastName;
+            person.middleName = middleName;
+            person.contacts = currentContacts;
+        } else {
+            addPerson({
+                firstName: firstName,
+                lastName: lastName,
+                middleName: middleName,
+                contacts: currentContacts
+            });
+        }
+        $table.bootstrapTable('load', getPersons());
+        $('#personDialog').modal('hide');
+    });
+
+    $('#searchInput').keyup(function () {
+        let searchQuery = $('#searchInput').val();
+        $searchInput.val(searchQuery);
+        $searchInput.keyup();
+    });
+    const $addContactDialogButton = $('#addContactToDialog');
+    $addContactDialogButton.click(function () {
+        const uuid = generateUUID();
+        let contact = {
+            uuid: uuid,
+            type: '',
+            value: '',
+        };
+
+        addContactRow(contact);
+        currentContacts.push({
+            uuid: uuid,
+            type: '',
+            value: ''
+        });
+        validateForm();
+    });
+    function addContactRow(contact) {
+        const newRowHtml = `
+                    <tr id="contact-row-${contact.uuid}" class="form-row contact-row">
+                    <td class="col">
+                        <select id="contact-type-${contact.uuid}" class="form-select" aria-label="Type">
+  <option value="phone">Телефон</option>
+  <option value="email">Email</option>
+  <option value="facebook">Facebook</option>
+  <option value="vk">VK</option>
+  <option value="other">Другое</option>
+</select>
+</td>
+<td class="col">
+<input type="text" class="form-control contact-value" id="contact-value-${contact.uuid}" value="${contact.value}" placeholder="Значение">
+</td>
+<td class="col"><button id="remove-contact-${contact.uuid}" type="button" class="btn btn-link"><span
+                                class="fa fa-trash"></span>
+                        </button>
+</td>
+                    </tr>
+`;
+        $('#contact-data').append(newRowHtml);
+        $('#contact-value-' + contact.uuid).keyup(function () {
+            validateForm();
+        });
+        $('#remove-contact-' + contact.uuid).click(function () {
+            console.log('Remove contact', contact, $('contact-row-' + contact.uuid));
+            $('#contact-row-' + contact.uuid).remove();
+            currentContacts = currentContacts.filter(function (item) {
+                return item.uuid !== contact.uuid;
+            });
+        });
+        if(contact.type) {
+            $('#contact-type-' + contact.uuid + ' option[value="'+contact.type+'"]').attr("selected", "selected");
+        }
+    }
+
+</script>
+</body>
+</html>

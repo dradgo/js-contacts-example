@@ -1,0 +1,31 @@
+.main-page {
+    background: #F5F5F5;
+}
+.table-search-header {
+    background: white;
+    height: 90px;
+}
+.table-content {
+}
+
+.block {
+    text-align: center;
+    vertical-align: middle;
+}
+.circle {
+    background: #9874FF;
+    border-radius: 50px;
+    color: white;
+    height: 50px;
+    font-weight: bold;
+    width: 50px;
+    display: table;
+    margin: 10px auto;
+}
+.circle p {
+    vertical-align: middle;
+    display: table-cell;
+}
+.dialog-id-text {
+    color: gray;
+}
