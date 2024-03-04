@@ -15,6 +15,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="scripts/scripts.js"></script>
+    <script src="scripts/rest-api.js"></script>
+    <script src="scripts/table-scripts.js"></script>
 </head>
 <body class="main-page">
 <div class="container-fluid table-search-header">
@@ -44,7 +46,7 @@
     <div class="row mh-100">
         <table
                 id="table"
-                data-search="true"
+                data-search="false"
                 data-toolbar="#toolbar"
                 data-detail-view="true"
                 data-click-to-select="true"
@@ -138,6 +140,7 @@
 <script>
     let currentPersonId = -1;
     let currentContacts = [];
+    let query = "";
     const $table = $('#table');
     $('#lastNameInput').keyup(function () {
         validateForm();
@@ -158,43 +161,38 @@
         ].join('')
     }
 
-    function nameFormatter(value, row, index) {
-        return [
-            row.firstName,
-            row.middleName,
-            row.lastName
-        ].join(' ')
+
+
+    function convertContactToHtml(contact) {
+        let icon = 'fa-user';
+        let classIcons = 'fa';
+        switch (contact.type) {
+            case 'phone':
+                icon = 'fa-phone';
+                break;
+            case 'email':
+                icon = 'fa-envelope';
+                break;
+            case 'vk':
+                classIcons = 'fab';
+                icon = 'fa-vk';
+                break;
+            case 'facebook':
+                classIcons = 'fab';
+                icon = 'fa-facebook-f';
+                break;
+        }
+        return `<span class="${classIcons} ${icon}" title="**${contact.type}**: ${contact.value}">&nbsp;</span>`;
     }
 
-    function contactFormatter(value, row, index) {
-        let person = getPerson(row.id);
-        return person.contacts.map(contact => {
-            let icon = 'fa-user';
-            let classIcons = 'fa';
-            switch (contact.type) {
-                case 'phone':
-                    icon = 'fa-phone';
-                    break;
-                case 'email':
-                    icon = 'fa-envelope';
-                    break;
-                case 'vk':
-                    classIcons = 'fab';
-                    icon = 'fa-vk';
-                    break;
-                case 'facebook':
-                    classIcons = 'fab';
-                    icon = 'fa-facebook-f';
-                    break;
-            }
-            return `<span class="${classIcons} ${icon}" title="**${contact.type}**: ${contact.value}">&nbsp;</span>`
-        }).join(' ');
-    }
+
 
 
     function clearContacts() {
         currentContacts = [];
         $('.contact-row').remove();
+        $addContactDialogButton.removeProp('disabled');
+        $addContactDialogButton.removeAttr('disabled');
     }
 
     function confirmRemoveContact() {
@@ -202,9 +200,12 @@
             field: 'id',
             values: [currentPersonId]
         });
-        removePerson(currentPersonId);
+        deletePerson(currentPersonId).then(function (response) {
+            updatePersons();
+        })
         $('#personDialog').modal('hide');
         $('#confirm-delete').modal('hide');
+
     }
     $('#confirmDelete').click(function () {
         confirmRemoveContact();
@@ -233,6 +234,10 @@
             }
             $('#deletePersonButton').show();
             validateForm();
+            if(currentContacts.length >= 10) {
+                $addContactDialogButton.prop('disabled', 'true');
+                $addContactDialogButton.setAttribute('disabled', 'true');
+            }
         },
         'click .remove': function (e, value, row, index) {
             let personId = row.id;
@@ -286,19 +291,25 @@
                         formatter: operateFormatter
                     }]
             ],
-            data: getPersons()
+            data: []
         })
     }
 
     const $searchInput = $('.search-input');
+
+    function updatePersons() {
+        getPersons(query).then(function (persons) {
+            console.log('Persons', persons)
+            $table.bootstrapTable('load', persons);
+        });
+    }
+
     $(function () {
         initTable();
-        $searchInput.hide();
+        updatePersons();
     })
     const $addClient = $('#addClient');
     $addClient.click(function () {
-        let person = addPerson({});
-        $table.bootstrapTable('load', getPersons());
     });
 
     const $showAddPerson = $('#showAddPerson');
@@ -336,22 +347,25 @@
             person.lastName = lastName;
             person.middleName = middleName;
             person.contacts = currentContacts;
+            updatePerson(person.id, person).then(function(person) {
+                updatePersons();
+            });
         } else {
             addPerson({
                 firstName: firstName,
                 lastName: lastName,
                 middleName: middleName,
                 contacts: currentContacts
+            }).then(function(person) {
+                updatePersons();
             });
         }
-        $table.bootstrapTable('load', getPersons());
         $('#personDialog').modal('hide');
     });
 
     $('#searchInput').keyup(function () {
-        let searchQuery = $('#searchInput').val();
-        $searchInput.val(searchQuery);
-        $searchInput.keyup();
+        query = $('#searchInput').val();
+        updatePersons();
     });
     const $addContactDialogButton = $('#addContactToDialog');
     $addContactDialogButton.click(function () {
@@ -361,7 +375,6 @@
             type: '',
             value: '',
         };
-
         addContactRow(contact);
         currentContacts.push({
             uuid: uuid,
@@ -369,6 +382,10 @@
             value: ''
         });
         validateForm();
+        if(currentContacts.length >= 10) {
+            $addContactDialogButton.prop('disabled', 'true');
+            $addContactDialogButton.setAttribute('disabled', 'true');
+        }
     });
     function addContactRow(contact) {
         const newRowHtml = `
@@ -401,6 +418,8 @@
             currentContacts = currentContacts.filter(function (item) {
                 return item.uuid !== contact.uuid;
             });
+            $addContactDialogButton.removeProp('disabled');
+            $addContactDialogButton.removeAttr('disabled');
         });
         if(contact.type) {
             $('#contact-type-' + contact.uuid + ' option[value="'+contact.type+'"]').attr("selected", "selected");

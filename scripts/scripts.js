@@ -1,46 +1,21 @@
 store = {
     persons: [
-        {
-            id: 1,
-            firstName: 'First1',
-            middleName: 'Middle1',
-            lastName: 'Last1',
-            createDate: new Date(),
-            updateDate: new Date(),
-            contacts: [{
-                uuid: generateUUID(),
-                type: 'vk',
-                label: 'Email',
-                value: 'test@example.com'
-            },
-                {
-                    uuid: generateUUID(),
-                    type: 'facebook',
-                    label: 'Телефон',
-                    value: '+123456789'
-                }]
-        },
-
-    ],
-    contactTypes: [
-        {
-            code: 'VK',
-            name: 'VK',
-            glyph: '[VK]'
-        },
     ]
 };
 
-function getPersons() {
-    return store.persons;
+
+
+
+
+
+function getPersons(query) {
+    return fetchPersons(query);
 }
 
 function addPerson(person) {
-    person.id = getNextId();
-    person.createDate = new Date();
-    person.updateDate = new Date();
-    store.persons.push(person);
-    return person;
+    return createPerson(person).then(function (person) {
+        console.log('Person created', person);
+    });
 }
 
 function removePerson(id) {
@@ -50,10 +25,9 @@ function removePerson(id) {
 }
 
 function getPerson(id) {
-    let person = store.persons.find(function (person) {
-        return person.id === id;
+    return store.persons.find(function (person) {
+        return person.id == id;
     });
-    return person;
 }
 
 function getContactTypes() {
@@ -70,9 +44,7 @@ function getNextId() {
     return maxId + 1;
 }
 
-function dateFormatter(value, row, index) {
-    return moment(value).format('DD.MM.YYYY HH:mm')
-}
+
 function validateForm() {
     let valid = true;
     if(!$('#firstNameInput').val()) {
