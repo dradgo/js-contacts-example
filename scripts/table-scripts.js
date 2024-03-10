@@ -10,6 +10,21 @@ function nameFormatter(value, row, index) {
     ].join(' ')
 }
 
+function showExtractContact(personId) {
+    let person = getPerson(personId);
+    const contactLimit = 5;
+    if(person.contacts.length > contactLimit) {
+        let restContacts = person.contacts.length - contactLimit;
+        let title = "";
+        for (let index = contactLimit; index < person.contacts.length; index++) {
+            let contact = person.contacts[index];
+            title += `**${contact.type}**: ${contact.value} \n`;
+        }
+        alert(title);
+    }
+    return true;
+}
+
 function contactFormatter(value, row, index) {
     let person = getPerson(row.id);
     let contactItems = [];
@@ -30,7 +45,7 @@ function contactFormatter(value, row, index) {
                 let contact = person.contacts[index];
                 title += `**${contact.type}**: ${contact.value} \n`;
             }
-            const itemHtml = `<span class="fa fa-plus" title="${title}">${restContacts}</span>`;
+            const itemHtml = `<span id="extra-contact-${person.id}" class="fa fa-plus" onclick="showExtractContact(${person.id})">${restContacts}</span>`;
             contactItems.push(itemHtml);
         }
 

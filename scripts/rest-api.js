@@ -50,11 +50,17 @@ function fromPersonDto(personDto) {
             value: contact.value
         })
     });
+    const fullName = [
+        personDto.name,
+        personDto.lastName,
+        personDto.surname
+    ].join(' ');
     return {
         id: personDto.id,
         firstName: personDto.name,
         lastName: personDto.surname,
         middleName: personDto.lastName,
+        fullName: fullName,
         createDate: personDto.createdAt,
         updateDate: personDto.updatedAt,
         contacts: contacts
